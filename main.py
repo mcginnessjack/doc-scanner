@@ -221,15 +221,11 @@ def extract_suffix_multiples(text: str, page_num: int) -> list[NumberMatch]:
         results.append(NumberMatch(value=val, page=page_num, raw_text=match.group(), context=ctx, multiplier=multiplier))
     return results
 
-
-_HEADER_ROW_LIMIT = 3  # footnotes below this depth can't overwrite header-derived multipliers
-
-
 def column_multipliers(table: list[list[str | None]], page_decls: list[tuple[int, int]]) -> list[int]:
     """Return per-column scale multiplier inferred from column header cells.
 
-    Falls back to the earliest page-level declaration (the page header, not footnotes) when
-    a column header has no explicit scale. This covers the common case where budget tables
+    Falls back to the earliest page-level declaration when a column header has no
+    explicit scale. This covers the common case where budget tables
     declare scale in the page title ("Dollars in Millions") rather than in individual
     column headers ("$M").
     """
@@ -239,11 +235,7 @@ def column_multipliers(table: list[list[str | None]], page_decls: list[tuple[int
     default_mult = page_decls[0][1] if page_decls else 1
     mults = [default_mult] * num_cols
 
-    # Header row limit is a heuristic to prevent footnotes from overwriting column multipliers
-    # This was an interesting suggestion from LLMs, and in practice seemed logical.
-    # In a real world setting would want to experiment with different limits and different table formats
-    # to find out how usefull this is, and other strategies for working with tables in large PDF documents.
-    for row in table[:_HEADER_ROW_LIMIT]:
+    for row in table:
         if not row:
             continue
         for col_idx, cell in enumerate(row):

@@ -395,7 +395,7 @@ class TestColumnMultipliers:
         assert column_multipliers([], []) == []
 
     def test_uses_earliest_page_decl_as_default(self):
-        # First decl = millions (page header), second decl = thousands (footnote)
+        # First declaration is treated as the page-level default.
         table = [["A", "B"], ["1", "2"]]
         mults = column_multipliers(table, [(0, 1_000_000), (500, 1_000)])
         assert mults == [1_000_000, 1_000_000]
