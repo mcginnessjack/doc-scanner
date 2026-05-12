@@ -269,6 +269,7 @@ def extract_table_numbers(
         if not row:
             continue
         row_label = next((c for c in row if c and c.strip()), "")
+        # check for non financials is a guard against applying mulitpliers where it isn't necessary in a table. 
         is_non_financial = bool(NON_FINANCIAL_KEYWORDS.search(row_label))
 
         for col_idx, cell in enumerate(row):
