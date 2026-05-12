@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "doc-scanner"
+version = "0.1.0"
+description = "Extract largest numbers from government budget PDFs"
+requires-python = ">=3.11"
+dependencies = [
+    "pdfplumber>=0.11",
+]
+
+[tool.setuptools]
+py-modules = ["main"]
+
+[dependency-groups]
+dev = ["pytest>=8"]
