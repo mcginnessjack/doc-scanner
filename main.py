@@ -184,7 +184,7 @@ def extract_numbers(text: str, page_num: int, declarations: list[tuple[int, int]
     return results
 
 # Also investigated using the quantulum3 package for this implementation, which is designed to extract quantities with units from text. 
-# Opted against including it in the first pass, for the sake of simplicity.
+# Opted against including it in the first pass, for the sake of not going dependency heavy.
 # In future work would like to experiment more with this package or similar ones to leverage pre-existing open source tools
 def extract_inline_multiples(text: str, page_num: int) -> list[NumberMatch]:
     """Extract prose patterns like '$9.6 billion' that carry their own unit declaration."""
@@ -302,7 +302,6 @@ def scan_pdf(pdf_path: Path) -> tuple[NumberMatch, NumberMatch]:
     """
     raw_matches: list[NumberMatch] = []
     adj_matches: list[NumberMatch] = []
-    inherited_mult: int = 1  # carry forward scale across continuation pages
 
     with pdfplumber.open(pdf_path) as pdf:
         for i, page in enumerate(pdf.pages):
@@ -313,11 +312,6 @@ def scan_pdf(pdf_path: Path) -> tuple[NumberMatch, NumberMatch]:
             page_num = i + 1
             # find a declaration like "all values on this page are in millions"
             page_decls = find_declarations(text)
-            if page_decls:
-                inherited_mult = page_decls[-1][1]
-            # Continuation pages of a multi-page table may omit the scale header;
-            # synthesize it at position 0 so all numbers inherit the last seen scale.
-            effective_decls = page_decls or ([(0, inherited_mult)] if inherited_mult != 1 else [])
 
             raw_matches.extend(extract_raw_numbers(text, page_num))
 
@@ -327,10 +321,9 @@ def scan_pdf(pdf_path: Path) -> tuple[NumberMatch, NumberMatch]:
                 adj_matches.extend(extract_table_numbers(table, page_num, col_mults))
             adj_matches.extend(extract_inline_multiples(text, page_num))
             adj_matches.extend(extract_suffix_multiples(text, page_num))
-            # Use inherited scale only on pages with no parseable tables; on table pages
-            # page_decls prevents false positives from non-financial narrative numbers.
-            text_decls = page_decls if tables else effective_decls
-            adj_matches.extend(extract_numbers(text, page_num, text_decls))
+            # Only apply scale declarations found on the current page; carrying scale
+            # across pages caused too many stale-context false positives in real PDFs.
+            adj_matches.extend(extract_numbers(text, page_num, page_decls))
 
     if not raw_matches:
         raise ValueError("No numbers found in PDF.")
