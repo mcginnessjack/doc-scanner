@@ -1,5 +1,7 @@
 """
-Extract the largest raw and context-adjusted numbers from a government budget PDF.
+Extract the largest raw and context-adjusted numbers from a PDF.
+
+Initially built with example US Gov budget documents.
 
 Usage:
     uv run main.py FY25_Air_Force_Working_Capital_Fund.pdf
@@ -367,10 +369,12 @@ def main() -> None:
 
     print()
     print(f"Largest raw number:      {fmt_number(best_raw.value)}")
-    print(f"  Context: page {best_raw.page}: ...{best_raw.context}...")
+    print(f"  Page: {best_raw.page}")
     print()
     print(f"Largest adjusted number: {fmt_number(best_adj.adjusted_value)}")
-    print(f"  Context: page {best_adj.page} ({fmt_multiplier(best_adj.multiplier)}): ...{best_adj.context}...")
+    print(f"  Page: {best_adj.page}")
+    print(f"  Multiplier: {fmt_multiplier(best_adj.multiplier)}")
+    print(f"  Context: ...{best_adj.context}...")
 
 
 if __name__ == "__main__":

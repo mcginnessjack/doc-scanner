@@ -1,6 +1,6 @@
 # doc-scanner
 
-Extracts the largest raw and context-adjusted numbers from a government budget PDF.
+Extracts the largest raw and context-adjusted numbers from a PDF.
 
 **Raw number**: the greatest numeric value as written in the document, regardless of unit.
 
@@ -22,8 +22,6 @@ uv run --group dev pytest
 uv run main.py sample_pdfs/FY25_Air_Force_Working_Capital_Fund.pdf
 ```
 
-Expected runtime: under 15 seconds for a 114-page, 12MB PDF.
-
 ## Example output
 
 ```
@@ -38,7 +36,7 @@ Largest adjusted number: 30,704,100,000
 
 ## How it works
 
-1. **PDF extraction**: Uses `pdfplumber` to extract text page by page.
+1. **PDF extraction**: Uses [pdfplumber](https://github.com/jsvine/pdfplumber) to extract text page by page.
 2. **Number parsing**: Regex matches comma-formatted values, uncommaed long integers, and decimals. The raw pass keeps literal numeric values broadly, while the adjusted pass filters years, zero-fill values, percentages, and obvious code fragments before applying scale multipliers.
 3. **Multiplier detection**: Scans for scale declarations like `(Dollars in Millions)`, `in thousands`, or `USD billions`.
 4. **Table-aware scaling**: Structured table extraction lets each column inherit the right scale from table/page headers.
@@ -46,3 +44,6 @@ Largest adjusted number: 30,704,100,000
 6. **Inline prose**: A supplemental pass catches self-contained phrases like `$9.6 billion`, `500 thousand`, or `$30M`.
 
 The code favors explainable heuristics over a black-box parser because the hardest part of this task is unit attribution: deciding when a visible number should inherit a nearby scale declaration, and when it is just a count, year, model number, or code.
+
+## Developing Notes
+Initially built based on a few example government budget PDFs. Research was done for potential packages to use, such as pdfplumber (used), PyMuPDF, quantulum3. A plan was made, fed into an LLM for initial scaffolding. Refined, tested, reviewed by human in the loop verification.
