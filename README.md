@@ -28,10 +28,13 @@ uv run main.py sample_pdfs/FY25_Air_Force_Working_Capital_Fund.pdf
 Scanning FY25_Air_Force_Working_Capital_Fund.pdf ...
 
 Largest raw number:      6,000,000
-  Context: page 93: ...rojects are smaller in scale (costing between $250,000 and $6,000,000) and are designed...
+  Page: 93
 
 Largest adjusted number: 30,704,100,000
-  Context: page 13 (x1,000,000 (millions)): ...Total Revenue Total Revenue 28,239.2 29,176.6 30,704.1 Cost of Goods Sold...
+  Page: 13
+  Multiplier: x1,000,000 (millions)
+  Context: ...Total Revenue Total Revenue 28,239.2 29,176.6 30,704.1
+Cost of Goods Sold Cost of Goods Sold 27,950.4 29,494.7 30,083.2
 ```
 
 ## How it works
