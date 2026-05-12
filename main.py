@@ -132,6 +132,8 @@ def _try_parse(raw: str) -> float | None:
         val = parse_number(raw)
     except ValueError:
         return None
+    # filters out 0's and years, only used for context language value, not raw
+    # presumably don't want to apply modifiers to years, and excluding 0's reduces noise when the goal is to find the largest number.
     return None if (val == 0.0 or is_year(val)) else val
 
 
