@@ -144,6 +144,14 @@ def is_code_context(text: str, start: int) -> bool:
 def get_context(text: str, start: int, end: int, window: int = 60) -> str:
     return text[max(0, start - window) : min(len(text), end + window)].replace("\n", " ").strip()
 
+# handles the case where a cell specific multiplier in a table overrides the column level header
+def inline_multiplier_for_match(text: str, number_match: re.Match[str]) -> int | None:
+    """Return inline scale for this specific number match, if present."""
+    match = INLINE_MULT_RE.match(text, number_match.start())
+    if not match or match.span(1) != number_match.span():
+        return None
+    return MULTIPLIER_MAP[match.group(2).lower()]
+
 
 def extract_raw_numbers(text: str, page_num: int) -> list[NumberMatch]:
     """Extract literal numeric values with minimal filtering for the raw-number answer."""
@@ -275,9 +283,10 @@ def extract_table_numbers(
                 if is_code_context(cell, match.start()):
                     continue
 
+                effective_mult = inline_multiplier_for_match(cell, match) or col_mult
                 context = f"{row_label}: {cell_stripped}"[:120] if row_label else cell_stripped[:120]
                 results.append(
-                    NumberMatch(value=val, page=page_num, raw_text=raw, context=context, multiplier=col_mult)
+                    NumberMatch(value=val, page=page_num, raw_text=raw, context=context, multiplier=effective_mult)
                 )
 
     return results

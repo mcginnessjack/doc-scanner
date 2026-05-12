@@ -17,6 +17,7 @@ from main import (
     fmt_multiplier,
     fmt_number,
     get_context,
+    inline_multiplier_for_match,
     is_code_context,
     is_year,
     multiplier_at,
@@ -136,6 +137,20 @@ class TestGetContext:
         text = "line1\nTARGET\nline2"
         ctx = get_context(text, 6, 12)
         assert "\n" not in ctx
+
+
+class TestInlineMultiplierForMatch:
+    def test_finds_immediate_scale_word(self):
+        text = "Revenue 5 million"
+        number_match = NUMBER_RE.search(text)
+        assert number_match is not None
+        assert inline_multiplier_for_match(text, number_match) == 1_000_000
+
+    def test_returns_none_without_scale_word(self):
+        text = "Revenue 5 next year"
+        number_match = NUMBER_RE.search(text)
+        assert number_match is not None
+        assert inline_multiplier_for_match(text, number_match) is None
 
 
 def _mults(text: str) -> list[int]:
@@ -450,6 +465,14 @@ class TestExtractTableNumbers:
         table = [["Revenue", "500"]]
         results = extract_table_numbers(table, 7, [1, 1])
         assert all(m.page == 7 for m in results)
+
+    def test_inline_unit_overrides_column_multiplier_for_that_value(self):
+        table = [["Revenue", "5 million", "6"]]
+        results = extract_table_numbers(table, 1, [1, 1_000, 1_000])
+        m5 = next(m for m in results if m.value == 5.0)
+        m6 = next(m for m in results if m.value == 6.0)
+        assert m5.multiplier == 1_000_000
+        assert m6.multiplier == 1_000
 
 
 class TestFmtNumber:
